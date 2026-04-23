@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TradeYard — UK & Ireland Furniture Wholesale Catalogue</title>
+  <meta name="description" content="Curated directory of genuine furniture wholesalers, importers, auctions, clearance outlets and makers across the UK and Ireland — focused on modern rustic, vintage, industrial, reclaimed and farmhouse styles." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b1e3d'/%3E%3Ctext x='32' y='42' font-family='Georgia' font-size='32' text-anchor='middle' fill='%23c8a24a' font-weight='700'%3ETY%3C/text%3E%3C/svg%3E" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: { 50: '#f3f5f9', 100: '#dde2ed', 200: '#b8c1d6', 300: '#8794b4', 400: '#5b6b92', 500: '#3d4e75', 600: '#2b3a5c', 700: '#1e2a46', 800: '#141e34', 900: '#0b1430', 950: '#060a1d' },
+            gold: { 50: '#faf6ec', 100: '#f2e8c8', 200: '#e6d28e', 300: '#d9ba5c', 400: '#c8a24a', 500: '#b28a39', 600: '#906e2f', 700: '#6e542a', 800: '#4c3b22', 900: '#2e2417' }
+          },
+          fontFamily: {
+            serif: ['Georgia','ui-serif','serif'],
+            sans: ['Inter','system-ui','sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <style>
+    html { font-family: 'Inter', system-ui, sans-serif; scroll-behavior: smooth; }
+    body { background: linear-gradient(180deg, #f8f5ef 0%, #eef0f5 100%); min-height: 100vh; }
+    .chip { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 500; line-height: 1.25rem; border: 1px solid transparent; cursor: default; }
+    .chip-clickable { cursor: pointer; transition: all 0.12s; user-select: none; }
+    .chip-clickable:hover { transform: translateY(-1px); }
+    .chip-active { background: #0b1430; color: #c8a24a; border-color: #c8a24a; }
+    .chip-inactive { background: #fff; color: #1e2a46; border-color: #dde2ed; }
+    .chip-inactive:hover { border-color: #b28a39; }
+    .deal-high { background: linear-gradient(135deg, #c8a24a, #b28a39); color: #fff; }
+    .deal-medium { background: #e6d28e; color: #2e2417; }
+    .deal-low { background: #f2e8c8; color: #4c3b22; }
+    .type-Importer { background: #dbeafe; color: #1e3a8a; }
+    .type-Wholesaler { background: #dcfce7; color: #14532d; }
+    .type-TradeRetailer { background: #fef3c7; color: #78350f; }
+    .type-Maker { background: #fce7f3; color: #831843; }
+    .type-Auction, .type-AuctionPlatform { background: #ede9fe; color: #4c1d95; }
+    .type-Liquidator { background: #fee2e2; color: #7f1d1d; }
+    .type-Outlet { background: #ccfbf1; color: #134e4a; }
+    .card { background: #fff; border-radius: 12px; padding: 1rem; transition: all 0.18s ease; border: 1px solid #e3e7ee; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 10px 32px -12px rgba(11,20,48,0.22); border-color: #c8a24a; }
+    .modal-backdrop { background: rgba(6,10,29,0.72); backdrop-filter: blur(4px); }
+    .filter-toggle { padding: 0.35rem 0.7rem; border-radius: 8px; font-size: 0.78rem; font-weight: 500; transition: all 0.12s; }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #b8c1d6; border-radius: 3px; }
+    .highlight { background: linear-gradient(120deg, transparent 0%, transparent 50%, #f2e8c8 50%, #f2e8c8 100%); background-size: 200% 100%; transition: background-position 0.3s ease; }
+    .highlight:hover { background-position: -100% 0; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    .saved-heart { color: #c8a24a; }
+    details > summary { list-style: none; cursor: pointer; }
+    details > summary::-webkit-details-marker { display: none; }
+    details > summary::after { content: '›'; float: right; font-size: 1.2rem; transform: rotate(0deg); transition: transform 0.15s; color: #5b6b92; }
+    details[open] > summary::after { transform: rotate(90deg); }
+  </style>
+</head>
+<body class="text-navy-900">
+
+  <header class="sticky top-0 z-30 bg-navy-900 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+      <a href="#" class="flex items-center gap-2 flex-shrink-0">
+        <div class="w-9 h-9 bg-gold-400 rounded-md flex items-center justify-center text-navy-900 font-serif font-bold text-lg">TY</div>
+        <div>
+          <div class="font-serif text-lg leading-tight">TradeYard</div>
+          <div class="text-gold-300 text-[10px] tracking-wider uppercase">UK · Ireland Furniture Sources</div>
+        </div>
+      </a>
+      <div class="flex-1 max-w-xl relative">
+        <input id="search" type="text" placeholder="Search name, city, style, notes…" class="w-full bg-navy-800 text-white placeholder-navy-300 border border-navy-700 focus:border-gold-400 rounded-lg px-4 py-2 pl-10 text-sm outline-none" />
+        <svg class="absolute left-3 top-2.5 w-4 h-4 text-navy-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+      </div>
+      <div class="hidden md:flex gap-1 text-xs">
+        <button data-preset="all" class="filter-toggle bg-navy-800 hover:bg-navy-700">All</button>
+        <button data-preset="uk" class="filter-toggle bg-navy-800 hover:bg-navy-700">UK</button>
+        <button data-preset="ireland" class="filter-toggle bg-navy-800 hover:bg-navy-700">Ireland</button>
+        <button data-preset="clearance" class="filter-toggle bg-navy-800 hover:bg-navy-700">Clearance</button>
+        <button data-preset="auctions" class="filter-toggle bg-navy-800 hover:bg-navy-700">Auctions</button>
+        <button data-preset="kitchen" class="filter-toggle bg-gold-400 text-navy-900 hover:bg-gold-300 font-semibold">Kitchen Tables</button>
+        <button data-preset="saved" class="filter-toggle bg-navy-800 hover:bg-navy-700">♥ Saved</button>
+      </div>
+    </div>
+    <div id="stats-strip" class="bg-navy-950 text-navy-200 text-xs px-4 py-1.5 flex justify-center gap-6 border-t border-navy-800">
+      <span><b class="text-gold-300" id="stat-total">—</b> total</span>
+      <span><b class="text-white" id="stat-uk">—</b> UK</span>
+      <span><b class="text-white" id="stat-ireland">—</b> Ireland</span>
+      <span><b class="text-white" id="stat-ni">—</b> NI</span>
+      <span><b class="text-white" id="stat-clearance">—</b> with clearance URL</span>
+      <span><b class="text-gold-300" id="stat-high">—</b> high deal</span>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row gap-6">
+
+    <aside class="md:w-72 flex-shrink-0">
+      <div class="sticky top-[120px] bg-white rounded-xl border border-navy-100 shadow-sm max-h-[calc(100vh-140px)] overflow-y-auto scrollbar-thin">
+        <div class="p-4 border-b border-navy-100 flex items-center justify-between">
+          <h2 class="font-serif text-lg text-navy-900">Filters</h2>
+          <button id="reset-filters" class="text-xs text-gold-600 hover:text-gold-400 font-medium">Reset</button>
+        </div>
+        <div class="p-4 space-y-4 text-sm">
+
+          <details open>
+            <summary class="font-semibold text-navy-900 py-1">Country</summary>
+            <div id="filter-country" class="flex flex-wrap gap-1.5 mt-2"></div>
+          </details>
+
+          <details open>
+            <summary class="font-semibold text-navy-900 py-1">Type</summary>
+            <div id="filter-type" class="flex flex-wrap gap-1.5 mt-2"></div>
+          </details>
+
+          <details open>
+            <summary class="font-semibold text-navy-900 py-1">Deal potential</summary>
+            <div id="filter-deal" class="flex flex-wrap gap-1.5 mt-2"></div>
+          </details>
+
+          <details>
+            <summary class="font-semibold text-navy-900 py-1">Price tier</summary>
+            <div id="filter-price" class="flex flex-wrap gap-1.5 mt-2"></div>
+          </details>
+
+          <details>
+            <summary class="font-semibold text-navy-900 py-1">Trade access</summary>
+            <div id="filter-trade" class="flex flex-wrap gap-1.5 mt-2"></div>
+          </details>
+
+          <details>
+            <summary class="font-semibold text-navy-900 py-1">Style</summary>
+            <div id="filter-styles" class="flex flex-wrap gap-1.5 mt-2"></div>
+          </details>
+
+          <details>
+            <summary class="font-semibold text-navy-900 py-1">Category</summary>
+            <div id="filter-categories" class="flex flex-wrap gap-1.5 mt-2"></div>
+          </details>
+
+          <details>
+            <summary class="font-semibold text-navy-900 py-1">Other</summary>
+            <div class="flex flex-col gap-2 mt-2">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="only-clearance" class="rounded border-navy-300 text-gold-500 focus:ring-gold-400" />
+                <span>Has clearance page</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="only-saved" class="rounded border-navy-300 text-gold-500 focus:ring-gold-400" />
+                <span>♥ Saved only</span>
+              </label>
+            </div>
+          </details>
+        </div>
+      </div>
+    </aside>
+
+    <section class="flex-1">
+      <div class="bg-white rounded-xl border border-navy-100 shadow-sm">
+        <div class="px-4 py-3 border-b border-navy-100 flex flex-wrap items-center gap-3 justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-navy-700"><b id="result-count" class="text-navy-900 text-base">—</b> matches</span>
+            <div id="active-pills" class="flex flex-wrap gap-1"></div>
+          </div>
+          <div class="flex items-center gap-2 text-sm">
+            <label class="text-navy-600 text-xs">Sort</label>
+            <select id="sort" class="bg-navy-50 border border-navy-200 rounded px-2 py-1 text-xs focus:border-gold-400 outline-none">
+              <option value="deal">Deal potential</option>
+              <option value="name">Name (A-Z)</option>
+              <option value="country">Country · Type</option>
+              <option value="type">Type</option>
+            </select>
+            <div class="hidden sm:flex border border-navy-200 rounded overflow-hidden">
+              <button data-view="grid" class="view-btn px-2 py-1 bg-navy-900 text-white text-xs">Grid</button>
+              <button data-view="list" class="view-btn px-2 py-1 bg-white text-navy-700 text-xs">List</button>
+            </div>
+          </div>
+        </div>
+        <div id="grid" class="p-4 grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3"></div>
+        <div id="empty-state" class="hidden p-12 text-center text-navy-500">
+          <div class="text-4xl mb-2">⌕</div>
+          <div>No sources match these filters. Try <button class="underline text-gold-600" onclick="resetFilters()">resetting</button>.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Detail modal -->
+  <div id="modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="modal-backdrop fixed inset-0" onclick="closeModal()"></div>
+    <div class="relative min-h-full flex items-start justify-center p-4 md:p-8">
+      <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full fade-in" id="modal-content"></div>
+    </div>
+  </div>
+
+  <footer class="text-center text-xs text-navy-500 py-8">
+    TradeYard · Curated furniture sources · <span id="footer-count">—</span> entries · <a href="#" id="export-btn" class="text-gold-600 hover:text-gold-400 underline">Export JSON</a>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

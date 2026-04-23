@@ -1,0 +1,28 @@
+TradeYard — UK & Ireland Furniture Wholesale Catalogue
+
+Purpose
+Curated directory of genuine furniture wholesalers, importers, auction houses,
+liquidators, outlets and makers across the UK and Ireland. Focused on modern
+rustic, vintage, industrial, reclaimed, farmhouse and kitchen-table categories.
+Built to skip the Faire-style retail-price-marked-as-wholesale middlemen and
+surface real trade sources with strong margins and active clearance channels.
+
+Stack
+Static site. Vanilla JS + Tailwind (CDN) + JSON data. No build step.
+- index.html   — shell + markup
+- app.js       — filters, search, cards, detail modal, favorites, notes
+- sources.json — 188 curated entries (UK 144 / Ireland 44)
+
+Data schema (sources.json)
+id, name, website, type, city, country, styles[], categories[], trade_only,
+trade_difficulty, clearance_url, upcoming_sales_url, min_order, buyers_premium,
+typical_stock, price_tier, deal_potential, notes.
+
+Features
+- 7 filter dimensions (country, type, deal, price, trade, style, category)
+- Full-text search, sort, saved favorites (localStorage), personal notes per
+  source (localStorage), export JSON, presets (UK, Ireland, Clearance, Auctions,
+  Kitchen Tables, Saved).
+
+Updating
+Edit sources.json directly — flat array, no build. Deploy pushes to Vercel.
