@@ -7,6 +7,7 @@ const state = {
   sources: [],
   search: '',
   filters: {
+    access: new Set(),
     country: new Set(),
     type: new Set(),
     deal: new Set(),
@@ -22,6 +23,22 @@ const state = {
   saved: new Set(),
   notes: {},
 };
+
+const ACCESS_LABEL = {
+  wholesale: '🏷 Trade Wholesale',
+  clearance: '% Clearance',
+  auction: '⚒ Auction',
+  retail: 'Retail Direct',
+};
+
+// How you'd actually buy from this source and roughly what you'd pay.
+function accessTier(s) {
+  const t = s.type;
+  if (t === 'Auction' || t === 'AuctionPlatform' || t === 'Liquidator') return 'auction';
+  if (s.trade_only) return 'wholesale';
+  if (s.clearance_url) return 'clearance';
+  return 'retail';
+}
 
 const TYPE_LABEL = {
   Importer: 'Importer',
@@ -131,6 +148,7 @@ function buildFilterUI() {
   const allStyles = uniq(state.sources.flatMap(s => s.styles || [])).sort();
   const allCats = uniq(state.sources.flatMap(s => s.categories || [])).sort();
 
+  renderChips('filter-access', ['wholesale','clearance','auction','retail'], 'access', v => ACCESS_LABEL[v]);
   renderChips('filter-country', countries, 'country', v => v);
   renderChips('filter-type', types, 'type', v => TYPE_LABEL[v] || v);
   renderChips('filter-deal', ['high','medium','low'], 'deal', v => DEAL_LABEL[v]);
@@ -177,6 +195,7 @@ function wireEvents() {
 }
 
 function labelFnFor(filterKey) {
+  if (filterKey === 'access') return v => ACCESS_LABEL[v];
   if (filterKey === 'country') return v => v;
   if (filterKey === 'type') return v => TYPE_LABEL[v] || v;
   if (filterKey === 'deal') return v => DEAL_LABEL[v];
@@ -188,6 +207,7 @@ function labelFnFor(filterKey) {
 }
 
 function collectFilterOptions(key) {
+  if (key === 'access') return ['wholesale','clearance','auction','retail'];
   if (key === 'country') return state.sources.map(s => s.country);
   if (key === 'type') return state.sources.map(s => s.type);
   if (key === 'deal') return ['high','medium','low'];
@@ -223,9 +243,15 @@ function applyPreset(name) {
   document.getElementById('only-saved').checked = false;
   if (name === 'uk') state.filters.country.add('UK');
   else if (name === 'ireland') state.filters.country.add('Ireland');
-  else if (name === 'clearance') { state.onlyClearance = true; document.getElementById('only-clearance').checked = true; }
-  else if (name === 'auctions') { state.filters.type.add('Auction'); state.filters.type.add('AuctionPlatform'); state.filters.type.add('Liquidator'); }
-  else if (name === 'kitchen') state.filters.categories.add('kitchen_tables');
+  else if (name === 'clearance') state.filters.access.add('clearance');
+  else if (name === 'auctions') state.filters.access.add('auction');
+  else if (name === 'wholesale') state.filters.access.add('wholesale');
+  else if (name === 'kitchen') {
+    state.filters.categories.add('kitchen_tables');
+    state.filters.access.add('wholesale');
+    state.filters.access.add('clearance');
+    state.filters.access.add('auction');
+  }
   else if (name === 'saved') { state.onlySaved = true; document.getElementById('only-saved').checked = true; }
   buildFilterUI();
   render();
@@ -247,6 +273,7 @@ function applyFilters() {
   return state.sources.filter(s => {
     if (state.onlySaved && !state.saved.has(s.id)) return false;
     if (state.onlyClearance && !s.clearance_url) return false;
+    if (state.filters.access.size && !state.filters.access.has(accessTier(s))) return false;
     if (state.filters.country.size && !state.filters.country.has(s.country)) return false;
     if (state.filters.type.size && !state.filters.type.has(s.type)) return false;
     if (state.filters.deal.size && !state.filters.deal.has(s.deal_potential)) return false;
@@ -292,12 +319,14 @@ function render() {
 function renderCard(s) {
   const flag = s.country === 'UK' ? '🇬🇧' : '🇮🇪';
   const saved = state.saved.has(s.id);
+  const tier = accessTier(s);
   const styleChips = (s.styles || []).slice(0, 4).map(x => `<span class="chip chip-inactive">${escapeHtml(STYLE_LABEL[x] || x)}</span>`).join('');
   const catChips = (s.categories || []).filter(c => c === 'kitchen_tables').slice(0,1).map(x => `<span class="chip" style="background:#c8a24a;color:#0b1430;font-weight:600;">🍽 Kitchen Tables</span>`).join('');
   const dealCls = `deal-${s.deal_potential}`;
   return `
-    <div class="card cursor-pointer fade-in" onclick="openDetail('${s.id}')">
-      <div class="flex items-start justify-between gap-2 mb-1.5">
+    <div class="card cursor-pointer fade-in relative access-${tier}" onclick="openDetail('${s.id}')">
+      <span class="access-badge access-badge-${tier}">${ACCESS_LABEL[tier]}</span>
+      <div class="flex items-start justify-between gap-2 mb-1.5 pt-4">
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-1.5">
             <h3 class="font-serif text-[1.02rem] leading-tight text-navy-900 truncate">${escapeHtml(s.name)}</h3>
@@ -310,13 +339,13 @@ function renderCard(s) {
         <span class="chip type-${s.type}">${TYPE_LABEL[s.type] || s.type}</span>
         <span class="chip ${dealCls}">${DEAL_LABEL[s.deal_potential] || s.deal_potential}</span>
         ${s.trade_only ? `<span class="chip" style="background:#1e2a46;color:#c8a24a;">Trade · ${s.trade_difficulty || 'low'}</span>` : ''}
-        ${s.clearance_url ? `<span class="chip" style="background:#fce7f3;color:#831843;">Clearance ↗</span>` : ''}
+        ${s.clearance_url && !s.trade_only ? `<span class="chip" style="background:#fce7f3;color:#831843;">Clearance ↗</span>` : ''}
         ${catChips}
       </div>
       <div class="flex flex-wrap gap-1 mb-2">${styleChips}</div>
       <p class="text-[0.78rem] text-navy-600 leading-snug line-clamp-3">${escapeHtml(s.notes || '')}</p>
       <div class="mt-2 pt-2 border-t border-navy-100 flex items-center justify-between text-[0.7rem]">
-        <span class="text-navy-500">${PRICE_LABEL[s.price_tier] || ''}</span>
+        <span class="text-navy-500">${PRICE_LABEL[s.price_tier] || ''} retail tier</span>
         <a href="${s.website}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="text-gold-600 hover:text-gold-400 font-medium">Visit site →</a>
       </div>
     </div>
@@ -374,19 +403,28 @@ function openDetail(id) {
   const flag = s.country === 'UK' ? '🇬🇧 United Kingdom' : '🇮🇪 Ireland';
   const saved = state.saved.has(s.id);
   const note = state.notes[s.id] || '';
+  const tier = accessTier(s);
+  const tierExplain = {
+    wholesale: 'Trade account required — you buy at trade prices (typically 40-60% below retail).',
+    clearance: 'Public sale / outlet / clearance page — below RRP but not wholesale.',
+    auction: 'Public auction bidding — prices vary, often below wholesale.',
+    retail: 'Retail direct — you pay full RRP. No wholesale margin.'
+  }[tier];
   const styles = (s.styles || []).map(x => `<span class="chip chip-inactive">${escapeHtml(STYLE_LABEL[x] || x)}</span>`).join(' ');
   const cats = (s.categories || []).map(x => `<span class="chip chip-inactive">${escapeHtml(CATEGORY_LABEL[x] || x)}</span>`).join(' ');
   const content = `
     <div class="p-6 md:p-8">
-      <div class="flex items-start justify-between gap-4 mb-4">
+      <div class="flex items-start justify-between gap-4 mb-3">
         <div>
           <div class="flex flex-wrap items-center gap-2 mb-2">
+            <span class="access-badge-${tier}" style="padding:0.25rem 0.6rem;border-radius:6px;font-size:0.72rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;">${ACCESS_LABEL[tier]}</span>
             <span class="chip type-${s.type}">${TYPE_LABEL[s.type] || s.type}</span>
             <span class="chip deal-${s.deal_potential}">${DEAL_LABEL[s.deal_potential]} deal potential</span>
-            ${s.trade_only ? `<span class="chip" style="background:#1e2a46;color:#c8a24a;">Trade only · ${s.trade_difficulty || 'low'}</span>` : '<span class="chip chip-inactive">Open to public</span>'}
+            ${s.trade_only ? `<span class="chip" style="background:#1e2a46;color:#c8a24a;">Trade · ${s.trade_difficulty || 'low'}</span>` : ''}
           </div>
           <h2 class="font-serif text-2xl md:text-3xl text-navy-900">${escapeHtml(s.name)}</h2>
           <div class="text-navy-500 text-sm mt-1">${flag}${s.city ? ' · ' + escapeHtml(s.city) : ''}</div>
+          <div class="mt-2 px-3 py-2 bg-navy-50 border-l-2 border-gold-400 text-[12px] text-navy-700 rounded-r"><b>${ACCESS_LABEL[tier]}:</b> ${tierExplain}</div>
         </div>
         <div class="flex items-center gap-1">
           <button onclick="toggleSave('${s.id}'); openDetail('${s.id}')" class="w-10 h-10 rounded-full hover:bg-navy-50 flex items-center justify-center text-2xl ${saved ? 'saved-heart' : 'text-navy-300'}">${saved ? '♥' : '♡'}</button>
@@ -480,13 +518,17 @@ function updateStats() {
   const uk = state.sources.filter(s => s.country === 'UK').length;
   const ie = state.sources.filter(s => s.country === 'Ireland').length;
   const ni = state.sources.filter(s => s.country === 'Ireland' && /Armagh|Antrim|Down|Belfast|Tyrone|Londonderry|Fermanagh/.test(s.city || '')).length;
-  const clearance = state.sources.filter(s => s.clearance_url).length;
   const high = state.sources.filter(s => s.deal_potential === 'high').length;
+  const tiers = { wholesale:0, clearance:0, auction:0, retail:0 };
+  for (const s of state.sources) tiers[accessTier(s)]++;
   setText('stat-total', total);
+  setText('stat-wholesale', tiers.wholesale);
+  setText('stat-clearance', tiers.clearance);
+  setText('stat-auction', tiers.auction);
+  setText('stat-retail', tiers.retail);
   setText('stat-uk', uk);
   setText('stat-ireland', ie);
   setText('stat-ni', ni);
-  setText('stat-clearance', clearance);
   setText('stat-high', high);
   setText('footer-count', total);
 }

@@ -55,6 +55,14 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .fade-in { animation: fadeIn 0.3s ease-out; }
     .saved-heart { color: #c8a24a; }
+    .access-badge { position: absolute; top: 0; left: 0; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.02em; padding: 0.2rem 0.55rem 0.22rem; border-radius: 12px 0 10px 0; text-transform: uppercase; }
+    .access-badge-wholesale { background: #0b1430; color: #c8a24a; }
+    .access-badge-clearance { background: #f59e0b; color: #fff; }
+    .access-badge-auction { background: #6d28d9; color: #fff; }
+    .access-badge-retail { background: #e3e7ee; color: #5b6b92; }
+    .card.access-retail { opacity: 0.88; }
+    .card.access-retail:hover { opacity: 1; }
+    .card.access-wholesale { border-color: #c8a24a; }
     details > summary { list-style: none; cursor: pointer; }
     details > summary::-webkit-details-marker { display: none; }
     details > summary::after { content: '›'; float: right; font-size: 1.2rem; transform: rotate(0deg); transition: transform 0.15s; color: #5b6b92; }
@@ -76,22 +84,27 @@
         <input id="search" type="text" placeholder="Search name, city, style, notes…" class="w-full bg-navy-800 text-white placeholder-navy-300 border border-navy-700 focus:border-gold-400 rounded-lg px-4 py-2 pl-10 text-sm outline-none" />
         <svg class="absolute left-3 top-2.5 w-4 h-4 text-navy-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
       </div>
-      <div class="hidden md:flex gap-1 text-xs">
+      <div class="hidden md:flex gap-1 text-xs flex-wrap">
         <button data-preset="all" class="filter-toggle bg-navy-800 hover:bg-navy-700">All</button>
+        <button data-preset="wholesale" class="filter-toggle bg-gold-400 text-navy-900 hover:bg-gold-300 font-semibold">🏷 Wholesale</button>
+        <button data-preset="clearance" class="filter-toggle bg-navy-800 hover:bg-navy-700">% Clearance</button>
+        <button data-preset="auctions" class="filter-toggle bg-navy-800 hover:bg-navy-700">⚒ Auctions</button>
         <button data-preset="uk" class="filter-toggle bg-navy-800 hover:bg-navy-700">UK</button>
         <button data-preset="ireland" class="filter-toggle bg-navy-800 hover:bg-navy-700">Ireland</button>
-        <button data-preset="clearance" class="filter-toggle bg-navy-800 hover:bg-navy-700">Clearance</button>
-        <button data-preset="auctions" class="filter-toggle bg-navy-800 hover:bg-navy-700">Auctions</button>
-        <button data-preset="kitchen" class="filter-toggle bg-gold-400 text-navy-900 hover:bg-gold-300 font-semibold">Kitchen Tables</button>
+        <button data-preset="kitchen" class="filter-toggle bg-gold-400 text-navy-900 hover:bg-gold-300 font-semibold">🍽 Kitchen Tables</button>
         <button data-preset="saved" class="filter-toggle bg-navy-800 hover:bg-navy-700">♥ Saved</button>
       </div>
     </div>
-    <div id="stats-strip" class="bg-navy-950 text-navy-200 text-xs px-4 py-1.5 flex justify-center gap-6 border-t border-navy-800">
+    <div id="stats-strip" class="bg-navy-950 text-navy-200 text-[11px] px-4 py-1.5 flex flex-wrap justify-center gap-x-5 gap-y-1 border-t border-navy-800">
       <span><b class="text-gold-300" id="stat-total">—</b> total</span>
+      <span><b class="text-gold-300" id="stat-wholesale">—</b> 🏷 wholesale</span>
+      <span><b class="text-white" id="stat-clearance">—</b> % clearance</span>
+      <span><b class="text-white" id="stat-auction">—</b> ⚒ auction</span>
+      <span><b class="text-navy-400" id="stat-retail">—</b> retail</span>
+      <span class="text-navy-600">·</span>
       <span><b class="text-white" id="stat-uk">—</b> UK</span>
       <span><b class="text-white" id="stat-ireland">—</b> Ireland</span>
       <span><b class="text-white" id="stat-ni">—</b> NI</span>
-      <span><b class="text-white" id="stat-clearance">—</b> with clearance URL</span>
       <span><b class="text-gold-300" id="stat-high">—</b> high deal</span>
     </div>
   </header>
@@ -105,6 +118,14 @@
           <button id="reset-filters" class="text-xs text-gold-600 hover:text-gold-400 font-medium">Reset</button>
         </div>
         <div class="p-4 space-y-4 text-sm">
+
+          <details open>
+            <summary class="font-semibold text-navy-900 py-1">Access — how you buy</summary>
+            <div id="filter-access" class="flex flex-wrap gap-1.5 mt-2"></div>
+            <p class="text-[11px] text-navy-500 mt-2 leading-snug">
+              <b class="text-navy-700">Wholesale</b> = trade-only (need account). <b class="text-navy-700">Clearance</b> = public outlet/sale pages. <b class="text-navy-700">Auction</b> = public bidding. <b class="text-navy-700">Retail</b> = full RRP (usually makers).
+            </p>
+          </details>
 
           <details open>
             <summary class="font-semibold text-navy-900 py-1">Country</summary>
