@@ -86,6 +86,8 @@
       </div>
       <div class="hidden md:flex gap-1 text-xs flex-wrap">
         <button data-preset="all" class="filter-toggle bg-navy-800 hover:bg-navy-700">All</button>
+        <button data-preset="starter" class="filter-toggle bg-gold-400 text-navy-900 hover:bg-gold-300 font-semibold">⭐ Starter Pack</button>
+        <button id="playbook-btn" class="filter-toggle bg-navy-800 hover:bg-navy-700 border border-gold-400 text-gold-300">📖 Playbook</button>
         <button data-preset="wholesale" class="filter-toggle bg-gold-400 text-navy-900 hover:bg-gold-300 font-semibold">🏷 Wholesale</button>
         <button data-preset="clearance" class="filter-toggle bg-navy-800 hover:bg-navy-700">% Clearance</button>
         <button data-preset="auctions" class="filter-toggle bg-navy-800 hover:bg-navy-700">⚒ Auctions</button>
@@ -214,6 +216,90 @@
     <div class="modal-backdrop fixed inset-0" onclick="closeModal()"></div>
     <div class="relative min-h-full flex items-start justify-center p-4 md:p-8">
       <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full fade-in" id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- Playbook modal -->
+  <div id="playbook" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="modal-backdrop fixed inset-0" onclick="closePlaybook()"></div>
+    <div class="relative min-h-full flex items-start justify-center p-4 md:p-8">
+      <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full fade-in p-6 md:p-8">
+        <div class="flex items-start justify-between gap-4 mb-5">
+          <div>
+            <div class="text-gold-600 text-xs uppercase tracking-widest font-semibold mb-1">Sourcing playbook</div>
+            <h2 class="font-serif text-2xl md:text-3xl text-navy-900">How to actually buy 10 tables / month at wholesale</h2>
+          </div>
+          <button onclick="closePlaybook()" class="w-10 h-10 rounded-full hover:bg-navy-50 flex items-center justify-center text-navy-500 text-xl flex-shrink-0">✕</button>
+        </div>
+
+        <div class="space-y-5 text-sm leading-relaxed text-navy-800">
+          <div class="bg-gold-50 border-l-4 border-gold-400 p-3 rounded-r text-navy-900">
+            <b>At 10 tables/month (~£80–150k/year wholesale spend), you're a serious trade buyer.</b> The strategy is <i>5–10 deep relationships</i>, not scraping 188 websites. Use this catalogue to build the shortlist, then move to phone and in-person.
+          </div>
+
+          <section>
+            <h3 class="font-serif text-lg text-navy-900 mb-2">① The 12-supplier starter shortlist</h3>
+            <p class="mb-2">Click <b>⭐ Starter Pack</b> in the header to see them. Six container-scale UK importers, two Ireland-side options, four rustic-accessory wholesalers (for brick moulds, dough bowls, chopping boards), and two administrator alert channels. Contact all 14 in one week.</p>
+          </section>
+
+          <section>
+            <h3 class="font-serif text-lg text-navy-900 mb-2">② Trade shows — the single highest-leverage day</h3>
+            <p class="mb-2">Two days at one trade show = 6 months of phone calls. Dates to put in the calendar now:</p>
+            <ul class="space-y-1 text-[13px] list-disc pl-5">
+              <li><b>January Furniture Show</b> — NEC Birmingham, mid-January (the biggie)</li>
+              <li><b>Spring Fair</b> — NEC Birmingham, early February (giftware + furniture + rustic décor)</li>
+              <li><b>Top Drawer</b> — Olympia London, mid-January + mid-September (design-led)</li>
+              <li><b>Autumn Fair</b> — NEC Birmingham, early September</li>
+              <li><b>INDX Furniture & Flooring</b> — Coventry, trade-only, quarterly</li>
+            </ul>
+            <p class="mt-2 text-[13px] text-navy-600">Entry typically £15–30. Most exhibitors have show-only sample pricing + immediate trade-account setup.</p>
+          </section>
+
+          <section>
+            <h3 class="font-serif text-lg text-navy-900 mb-2">③ Warehouse visits &gt; phone calls</h3>
+            <p>Plan <b>one Midlands day trip</b> — you can fit in Hill Interiors (Derbyshire), Coach House (Lancashire), Baumhaus (Bicester), Heartlands (Smethwick), Indian Hub (Corby). Book 1 hour each. This turns an anonymous trade account into a contact who texts you when new containers arrive. At your volume, every importer in this list will say yes to a warehouse visit.</p>
+          </section>
+
+          <section>
+            <h3 class="font-serif text-lg text-navy-900 mb-2">④ Container splits — the real unlock</h3>
+            <p>A full 20ft container from India is £15–25k / ~100–150 pieces. You're already close to a full container quarterly. Ask Millwards, Coach House, or Indian Hub about <b>sharing a container</b> with another retailer — gets you within 10–15% of direct-from-factory pricing. After 2–3 successful container splits, a direct scouting trip to <b>Jodhpur</b> (sheesham, mango, reclaimed) or <b>Jepara</b> (Indonesian teak) is financially viable: ~£2,500 all-in, saves 25–35%.</p>
+          </section>
+
+          <section>
+            <h3 class="font-serif text-lg text-navy-900 mb-2">⑤ Administration / insolvency alerts</h3>
+            <p>This is where the biggest deals happen — <b>before</b> stock ever reaches public auction. Register your trade interest with:</p>
+            <ul class="space-y-1 text-[13px] list-disc pl-5">
+              <li><b>FRP Advisory</b> — frpadvisory.com (now in catalogue)</li>
+              <li><b>Begbies Traynor</b> — begbies-traynorgroup.com (now in catalogue)</li>
+              <li><b>Interpath Advisory</b> — interpath.com</li>
+              <li><b>Teneo</b> — teneo.com/services/restructuring</li>
+            </ul>
+            <p class="mt-2 text-[13px] text-navy-600">When a furniture retailer enters administration, administrators email their registered buyer list directly. 50–80% off wholesale is common. The auction houses (John Pye, Wilsons) are what's <i>left over</i> after administrators' trade buyers.</p>
+          </section>
+
+          <section>
+            <h3 class="font-serif text-lg text-navy-900 mb-2">⑥ The under-the-radar channels</h3>
+            <ul class="space-y-1 text-[13px] list-disc pl-5">
+              <li><b>Private Facebook groups</b>: "UK Interiors Trade", "Rustic Furniture Trade UK" — invite-only, ask any existing trade contact for referral</li>
+              <li><b>LinkedIn DMs to importer owners</b> — surprisingly responsive vs website contact forms</li>
+              <li><b>WhatsApp broadcast lists</b> — ask to be added after first order; "container arriving Tuesday, first pick" messages</li>
+              <li><b>INDX + The Retail Association (TRA)</b> membership — private dealer days</li>
+            </ul>
+          </section>
+
+          <section class="bg-navy-50 p-4 rounded-lg">
+            <h3 class="font-serif text-lg text-navy-900 mb-2">Realistic 4-week launch plan</h3>
+            <ol class="space-y-1.5 text-[13px] list-decimal pl-5">
+              <li><b>Week 1 — Prep:</b> business/VAT sorted, trade references ready, one-page "about our stores" PDF, dedicated trade@ email.</li>
+              <li><b>Week 2 — Apply:</b> trade account applications with all 12 starter-pack suppliers + admin-alert registration with FRP + Begbies. Book travel for the Midlands day.</li>
+              <li><b>Week 3 — Visit:</b> Midlands warehouse day (5 importers), attend next trade show (or pre-book ticket + hotel).</li>
+              <li><b>Week 4 — Act:</b> first order with the 2–3 importers that felt best. Ask about container splits with the strongest one. Add yourself to 2 private trade Facebook groups.</li>
+            </ol>
+          </section>
+
+          <div class="text-center text-xs text-navy-500 pt-2">This catalogue narrows the field from hundreds to the right dozen. The margin verification is still a human task per supplier — but the phone calls become cheap once the shortlist is right.</div>
+        </div>
+      </div>
     </div>
   </div>
 

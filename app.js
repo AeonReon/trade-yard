@@ -18,6 +18,7 @@ const state = {
   },
   onlyClearance: false,
   onlySaved: false,
+  onlyStarter: false,
   sort: 'deal',
   view: 'grid',
   saved: new Set(),
@@ -101,7 +102,17 @@ const CATEGORY_LABEL = {
   commercial_clearance: 'Commercial Clearance',
   home_returns: 'Home Returns',
   pallet_lots: 'Pallet Lots',
+  kitchen_decor: 'Kitchen Decor',
 };
+
+// Curated shortlist for the "10 tables/month + rustic chairs + kitchen decor" use case.
+// These are the 12 to contact first — covers container-scale furniture + rustic accessories + admin alerts.
+const STARTER_IDS = new Set([
+  'millwards','coach-house','hill-interiors','indian-hub','ancient-mariner','baumhaus',
+  'bluebone','gie-furniture',
+  'ian-snow','parlane-international','namaste-uk','nkuku',
+  'frp-advisory','begbies-traynor'
+]);
 
 const DEAL_LABEL = { high: '★ High', medium: 'Medium', low: 'Low' };
 const PRICE_LABEL = { budget: 'Budget', mid: 'Mid', premium: 'Premium' };
@@ -191,8 +202,20 @@ function wireEvents() {
   document.getElementById('only-saved').addEventListener('change', e => { state.onlySaved = e.target.checked; render(); });
   document.getElementById('reset-filters').addEventListener('click', resetFilters);
   document.getElementById('export-btn').addEventListener('click', e => { e.preventDefault(); exportJson(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closePlaybook(); } });
+  document.getElementById('playbook-btn').addEventListener('click', openPlaybook);
 }
+
+function openPlaybook() {
+  document.getElementById('playbook').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closePlaybook() {
+  document.getElementById('playbook').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+window.openPlaybook = openPlaybook;
+window.closePlaybook = closePlaybook;
 
 function labelFnFor(filterKey) {
   if (filterKey === 'access') return v => ACCESS_LABEL[v];
@@ -239,8 +262,12 @@ function applyPreset(name) {
   Object.values(state.filters).forEach(s => s.clear());
   state.onlyClearance = false;
   state.onlySaved = false;
+  state.onlyStarter = false;
+  state.search = '';
+  document.getElementById('search').value = '';
   document.getElementById('only-clearance').checked = false;
   document.getElementById('only-saved').checked = false;
+  if (name === 'starter') state.onlyStarter = true;
   if (name === 'uk') state.filters.country.add('UK');
   else if (name === 'ireland') state.filters.country.add('Ireland');
   else if (name === 'clearance') state.filters.access.add('clearance');
@@ -271,6 +298,7 @@ function setView(v) {
 function applyFilters() {
   const q = state.search;
   return state.sources.filter(s => {
+    if (state.onlyStarter && !STARTER_IDS.has(s.id)) return false;
     if (state.onlySaved && !state.saved.has(s.id)) return false;
     if (state.onlyClearance && !s.clearance_url) return false;
     if (state.filters.access.size && !state.filters.access.has(accessTier(s))) return false;
@@ -378,6 +406,7 @@ function renderRow(s) {
 function renderActivePills() {
   const pills = [];
   if (state.search) pills.push({ label: `"${state.search}"`, clear: () => { state.search = ''; document.getElementById('search').value = ''; } });
+  if (state.onlyStarter) pills.push({ label: '⭐ Starter Pack', clear: () => { state.onlyStarter = false; } });
   if (state.onlyClearance) pills.push({ label: 'Clearance only', clear: () => { state.onlyClearance = false; document.getElementById('only-clearance').checked = false; } });
   if (state.onlySaved) pills.push({ label: '♥ Saved only', clear: () => { state.onlySaved = false; document.getElementById('only-saved').checked = false; } });
   for (const [k, set] of Object.entries(state.filters)) {
