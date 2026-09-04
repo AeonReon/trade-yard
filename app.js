@@ -19,6 +19,7 @@ const state = {
   onlyClearance: false,
   onlySaved: false,
   onlyStarter: false,
+  onlyRustic: false,
   sort: 'deal',
   view: 'grid',
   saved: new Set(),
@@ -110,9 +111,16 @@ const CATEGORY_LABEL = {
 const STARTER_IDS = new Set([
   'millwards','coach-house','hill-interiors','indian-hub','ancient-mariner','baumhaus',
   'bluebone','gie-furniture',
-  'ian-snow','parlane-international','namaste-uk','nkuku',
+  'ian-snow','namaste-uk','nkuku',
+  'annaghmore-agencies','muubs','chic-antique','one-world',
   'frp-advisory','begbies-traynor'
 ]);
+
+const FLAG = { UK: '🇬🇧', Ireland: '🇮🇪', Denmark: '🇩🇰', Netherlands: '🇳🇱', Sweden: '🇸🇪', Belgium: '🇧🇪' };
+const COUNTRY_FULL = { UK: 'United Kingdom', Ireland: 'Ireland', Denmark: 'Denmark', Netherlands: 'Netherlands', Sweden: 'Sweden', Belgium: 'Belgium' };
+function flagFor(c) { return FLAG[c] || '🏳'; }
+// A supplier counts as reachable from a country if it is based there OR ships there.
+function servesCountry(s, c) { return s.country === c || (s.ships_to || []).includes(c); }
 
 const DEAL_LABEL = { high: '★ High', medium: 'Medium', low: 'Low' };
 const PRICE_LABEL = { budget: 'Budget', mid: 'Mid', premium: 'Premium' };
@@ -249,6 +257,8 @@ function toggleFilter(key, value) {
 function resetFilters() {
   Object.values(state.filters).forEach(s => s.clear());
   state.search = '';
+  state.onlyRustic = false;
+  state.onlyStarter = false;
   state.onlyClearance = false;
   state.onlySaved = false;
   document.getElementById('search').value = '';
@@ -263,11 +273,14 @@ function applyPreset(name) {
   state.onlyClearance = false;
   state.onlySaved = false;
   state.onlyStarter = false;
+  state.onlyRustic = false;
   state.search = '';
   document.getElementById('search').value = '';
   document.getElementById('only-clearance').checked = false;
   document.getElementById('only-saved').checked = false;
   if (name === 'starter') state.onlyStarter = true;
+  // "New & shipped": ranges you reorder from stock, not one-offs you have to go and source.
+  if (name === 'rustic') state.onlyRustic = true;
   if (name === 'uk') state.filters.country.add('UK');
   else if (name === 'ireland') state.filters.country.add('Ireland');
   else if (name === 'clearance') state.filters.access.add('clearance');
@@ -299,10 +312,11 @@ function applyFilters() {
   const q = state.search;
   return state.sources.filter(s => {
     if (state.onlyStarter && !STARTER_IDS.has(s.id)) return false;
+    if (state.onlyRustic && !s.reorderable) return false;
     if (state.onlySaved && !state.saved.has(s.id)) return false;
     if (state.onlyClearance && !s.clearance_url) return false;
     if (state.filters.access.size && !state.filters.access.has(accessTier(s))) return false;
-    if (state.filters.country.size && !state.filters.country.has(s.country)) return false;
+    if (state.filters.country.size && ![...state.filters.country].some(c => servesCountry(s, c))) return false;
     if (state.filters.type.size && !state.filters.type.has(s.type)) return false;
     if (state.filters.deal.size && !state.filters.deal.has(s.deal_potential)) return false;
     if (state.filters.price.size && !state.filters.price.has(s.price_tier)) return false;
@@ -313,7 +327,7 @@ function applyFilters() {
     if (state.filters.styles.size && !(s.styles || []).some(x => state.filters.styles.has(x))) return false;
     if (state.filters.categories.size && !(s.categories || []).some(x => state.filters.categories.has(x))) return false;
     if (q) {
-      const hay = [s.name, s.city, s.country, s.notes, (s.styles||[]).join(' '), (s.categories||[]).join(' ')].join(' ').toLowerCase();
+      const hay = [s.name, s.city, s.country, s.notes, s.min_order, (s.ships_to||[]).join(' '), (s.styles||[]).join(' '), (s.categories||[]).join(' ')].join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -345,7 +359,7 @@ function render() {
 }
 
 function renderCard(s) {
-  const flag = s.country === 'UK' ? '🇬🇧' : '🇮🇪';
+  const flag = flagFor(s.country);
   const saved = state.saved.has(s.id);
   const tier = accessTier(s);
   const styleChips = (s.styles || []).slice(0, 4).map(x => `<span class="chip chip-inactive">${escapeHtml(STYLE_LABEL[x] || x)}</span>`).join('');
@@ -369,6 +383,8 @@ function renderCard(s) {
         ${s.trade_only ? `<span class="chip" style="background:#1e2a46;color:#c8a24a;">Trade · ${s.trade_difficulty || 'low'}</span>` : ''}
         ${s.clearance_url && !s.trade_only ? `<span class="chip" style="background:#fce7f3;color:#831843;">Clearance ↗</span>` : ''}
         ${catChips}
+        ${s.reorderable ? '<span class="chip" style="background:#e8f0e4;color:#2f4a26;font-weight:600;">🪵 New &amp; shipped</span>' : ''}
+        ${s.link_status === 'dead' ? '<span class="chip" style="background:#fee2e2;color:#991b1b;font-weight:600;">⚠ Link dead</span>' : ''}
       </div>
       <div class="flex flex-wrap gap-1 mb-2">${styleChips}</div>
       <p class="text-[0.78rem] text-navy-600 leading-snug line-clamp-3">${escapeHtml(s.notes || '')}</p>
@@ -381,7 +397,7 @@ function renderCard(s) {
 }
 
 function renderRow(s) {
-  const flag = s.country === 'UK' ? '🇬🇧' : '🇮🇪';
+  const flag = flagFor(s.country);
   const saved = state.saved.has(s.id);
   return `
     <div class="card cursor-pointer fade-in !p-3" onclick="openDetail('${s.id}')">
@@ -407,6 +423,7 @@ function renderActivePills() {
   const pills = [];
   if (state.search) pills.push({ label: `"${state.search}"`, clear: () => { state.search = ''; document.getElementById('search').value = ''; } });
   if (state.onlyStarter) pills.push({ label: '⭐ Starter Pack', clear: () => { state.onlyStarter = false; } });
+  if (state.onlyRustic) pills.push({ label: '🪵 Modern Rustic — new & shipped', clear: () => { state.onlyRustic = false; } });
   if (state.onlyClearance) pills.push({ label: 'Clearance only', clear: () => { state.onlyClearance = false; document.getElementById('only-clearance').checked = false; } });
   if (state.onlySaved) pills.push({ label: '♥ Saved only', clear: () => { state.onlySaved = false; document.getElementById('only-saved').checked = false; } });
   for (const [k, set] of Object.entries(state.filters)) {
@@ -429,7 +446,7 @@ window.clearPill = function(idx) {
 function openDetail(id) {
   const s = state.sources.find(x => x.id === id);
   if (!s) return;
-  const flag = s.country === 'UK' ? '🇬🇧 United Kingdom' : '🇮🇪 Ireland';
+  const flag = `${flagFor(s.country)} ${COUNTRY_FULL[s.country] || s.country}`;
   const saved = state.saved.has(s.id);
   const note = state.notes[s.id] || '';
   const tier = accessTier(s);
@@ -465,6 +482,7 @@ function openDetail(id) {
         <a href="${s.website}" target="_blank" rel="noopener" class="bg-navy-900 hover:bg-navy-800 text-white text-sm text-center font-semibold rounded-lg px-3 py-2.5">Visit website ↗</a>
         ${s.clearance_url ? `<a href="${s.clearance_url}" target="_blank" rel="noopener" class="bg-gold-400 hover:bg-gold-300 text-navy-900 text-sm text-center font-semibold rounded-lg px-3 py-2.5">Clearance page ↗</a>` : ''}
         ${s.upcoming_sales_url ? `<a href="${s.upcoming_sales_url}" target="_blank" rel="noopener" class="bg-gold-400 hover:bg-gold-300 text-navy-900 text-sm text-center font-semibold rounded-lg px-3 py-2.5">Upcoming sales ↗</a>` : ''}
+        ${s.b2b_url ? `<a href="${s.b2b_url}" target="_blank" rel="noopener" class="bg-navy-700 hover:bg-navy-600 text-white text-sm text-center font-semibold rounded-lg px-3 py-2.5">Trade portal ↗</a>` : ''}
         <button onclick="copyInfo('${s.id}')" class="bg-white border border-navy-200 hover:border-gold-400 text-navy-900 text-sm font-medium rounded-lg px-3 py-2.5">Copy info</button>
       </div>
 
@@ -485,10 +503,23 @@ function openDetail(id) {
           ${s.typical_stock ? `<div><div class="text-[10px] uppercase tracking-wider text-navy-500 font-semibold">Typical stock</div><div class="text-navy-900 mt-0.5">${escapeHtml(s.typical_stock.replace(/_/g,' '))}</div></div>` : ''}
         </div>
 
+        ${(s.ships_to && s.country !== 'UK' && s.country !== 'Ireland') ? `<div>
+          <div class="text-xs uppercase tracking-wider text-navy-500 mb-1.5 font-semibold">Supplies</div>
+          <div class="text-navy-700">${s.ships_to.map(c => `${flagFor(c)} ${escapeHtml(COUNTRY_FULL[c] || c)}`).join(' · ')}</div>
+        </div>` : ''}
+
         <div>
           <div class="text-xs uppercase tracking-wider text-navy-500 mb-1.5 font-semibold">Notes</div>
           <p class="text-navy-700 leading-relaxed">${escapeHtml(s.notes || '—')}</p>
         </div>
+
+        ${s.verified ? `<div class="text-[11px] ${s.link_status === 'dead' ? 'text-red-700 bg-red-50 border-red-200' : 'text-navy-500 bg-navy-50 border-navy-100'} border rounded px-3 py-2">
+          ${s.link_status === 'dead'
+            ? `<b>Link checked ${escapeHtml(s.verified)} — domain did not resolve.</b> Treat as closed or renamed until someone re-checks it.`
+            : s.link_status === 'blocked'
+              ? `Link checked ${escapeHtml(s.verified)}. Site is live but blocks automated checks, so the detail here has not been re-read from the page.`
+              : `Link checked and reachable on ${escapeHtml(s.verified)}.`}
+        </div>` : ''}
 
         <div>
           <div class="text-xs uppercase tracking-wider text-navy-500 mb-1.5 font-semibold flex items-center justify-between">
@@ -544,10 +575,11 @@ window.copyInfo = function(id) {
 // ---------- stats ----------
 function updateStats() {
   const total = state.sources.length;
-  const uk = state.sources.filter(s => s.country === 'UK').length;
-  const ie = state.sources.filter(s => s.country === 'Ireland').length;
+  const uk = state.sources.filter(s => servesCountry(s, 'UK')).length;
+  const ie = state.sources.filter(s => servesCountry(s, 'Ireland')).length;
   const ni = state.sources.filter(s => s.country === 'Ireland' && /Armagh|Antrim|Down|Belfast|Tyrone|Londonderry|Fermanagh/.test(s.city || '')).length;
   const high = state.sources.filter(s => s.deal_potential === 'high').length;
+  const rustic = state.sources.filter(s => s.reorderable).length;
   const tiers = { wholesale:0, clearance:0, auction:0, retail:0 };
   for (const s of state.sources) tiers[accessTier(s)]++;
   setText('stat-total', total);
@@ -559,6 +591,7 @@ function updateStats() {
   setText('stat-ireland', ie);
   setText('stat-ni', ni);
   setText('stat-high', high);
+  setText('stat-rustic', rustic);
   setText('footer-count', total);
 }
 
