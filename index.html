@@ -5,7 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TradeYard — UK & Ireland Furniture Wholesale Catalogue</title>
   <meta name="description" content="Curated directory of genuine furniture wholesalers, importers, auctions, clearance outlets and makers across the UK and Ireland — focused on modern rustic, vintage, industrial, reclaimed and farmhouse styles." />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b1e3d'/%3E%3Ctext x='32' y='42' font-family='Georgia' font-size='32' text-anchor='middle' fill='%23c8a24a' font-weight='700'%3ETY%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" href="./icons/favicon-32.png?v=2" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#0b1430" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="TradeYard" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png?v=2" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -84,7 +90,7 @@
         <input id="search" type="text" placeholder="Search name, city, style, notes…" class="w-full bg-navy-800 text-white placeholder-navy-300 border border-navy-700 focus:border-gold-400 rounded-lg px-4 py-2 pl-10 text-sm outline-none" />
         <svg class="absolute left-3 top-2.5 w-4 h-4 text-navy-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
       </div>
-      <div class="hidden md:flex gap-1 text-xs flex-wrap">
+      <div id="preset-row" class="hidden md:flex gap-1 text-xs flex-wrap">
         <button data-preset="all" class="filter-toggle bg-navy-800 hover:bg-navy-700">All</button>
         <button data-preset="starter" class="filter-toggle bg-gold-400 text-navy-900 hover:bg-gold-300 font-semibold">⭐ Starter Pack</button>
         <button id="playbook-btn" class="filter-toggle bg-navy-800 hover:bg-navy-700 border border-gold-400 text-gold-300">📖 Playbook</button>
@@ -98,16 +104,18 @@
         <button data-preset="saved" class="filter-toggle bg-navy-800 hover:bg-navy-700">♥ Saved</button>
       </div>
     </div>
+    <div id="preset-row-mobile" class="md:hidden bg-navy-900 px-3 pb-2.5 flex gap-1.5 text-xs overflow-x-auto"
+         style="-webkit-overflow-scrolling:touch;scrollbar-width:none;"></div>
     <div id="stats-strip" class="bg-navy-950 text-navy-200 text-[11px] px-4 py-1.5 flex flex-wrap justify-center gap-x-5 gap-y-1 border-t border-navy-800">
       <span><b class="text-gold-300" id="stat-total">—</b> total</span>
       <span><b class="text-gold-300" id="stat-wholesale">—</b> 🏷 wholesale</span>
-      <span><b class="text-white" id="stat-clearance">—</b> % clearance</span>
-      <span><b class="text-white" id="stat-auction">—</b> ⚒ auction</span>
-      <span><b class="text-navy-400" id="stat-retail">—</b> retail</span>
+      <span class="hidden md:inline"><b class="text-white" id="stat-clearance">—</b> % clearance</span>
+      <span class="hidden md:inline"><b class="text-white" id="stat-auction">—</b> ⚒ auction</span>
+      <span class="hidden md:inline"><b class="text-navy-400" id="stat-retail">—</b> retail</span>
       <span class="text-navy-600">·</span>
       <span><b class="text-white" id="stat-uk">—</b> UK</span>
       <span><b class="text-white" id="stat-ireland">—</b> Ireland</span>
-      <span><b class="text-white" id="stat-ni">—</b> NI</span>
+      <span class="hidden md:inline"><b class="text-white" id="stat-ni">—</b> NI</span>
       <span><b class="text-gold-300" id="stat-rustic">—</b> 🪵 new &amp; shipped</span>
       <span><b class="text-gold-300" id="stat-high">—</b> high deal</span>
     </div>
@@ -310,5 +318,37 @@
   </footer>
 
   <script src="app.js"></script>
+
+  <!-- Version pill + new-build banner. iOS PWAs hold onto index.html for hours;
+       this polls version.json so a shipped fix is never invisible. -->
+  <div id="version-pill" style="position:fixed;right:8px;bottom:8px;z-index:40;font-size:10px;
+       letter-spacing:.04em;color:#5b6b92;background:rgba(255,255,255,.75);border:1px solid #dde2ed;
+       border-radius:999px;padding:2px 8px;pointer-events:none;">v—</div>
+  <button id="update-banner" hidden onclick="location.reload()"
+       style="position:fixed;left:0;right:0;bottom:0;z-index:60;border:0;cursor:pointer;
+       background:#c8a24a;color:#0b1430;font-weight:700;font-size:14px;padding:13px;">
+    🔄 New version available — tap to reload
+  </button>
+  <script>
+    (async function () {
+      const pill = document.getElementById('version-pill');
+      const banner = document.getElementById('update-banner');
+      async function stamp() {
+        try {
+          const r = await fetch('./version.json?t=' + Date.now(), { cache: 'no-store' });
+          return (await r.json()).version;
+        } catch { return null; }
+      }
+      let initial = await stamp();
+      if (initial != null) pill.textContent = 'v' + initial;
+      setInterval(async () => {
+        const now = await stamp();
+        if (now != null && initial != null && now !== initial) banner.hidden = false;
+      }, 60000);
+      if ('serviceWorker' in navigator) {
+        addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+      }
+    })();
+  </script>
 </body>
 </html>

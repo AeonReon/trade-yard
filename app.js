@@ -126,6 +126,35 @@ const DEAL_LABEL = { high: '★ High', medium: 'Medium', low: 'Low' };
 const PRICE_LABEL = { budget: 'Budget', mid: 'Mid', premium: 'Premium' };
 const TRADE_LABEL = { none: 'Public', low: 'Trade · Easy', medium: 'Trade · Medium', high: 'Trade · Strict' };
 
+// On a phone the header has no room for the preset row, so it gets its own
+// scroll strip under the search box. Same buttons, same handler — cloned, not rebuilt.
+function mirrorPresetsForMobile() {
+  const src = document.getElementById('preset-row');
+  const dst = document.getElementById('preset-row-mobile');
+  if (!src || !dst || dst.children.length) return;
+  for (const btn of src.children) {
+    const c = btn.cloneNode(true);
+    c.removeAttribute('id');            // ids must stay unique; playbook is handled by class below
+    if (btn.id === 'playbook-btn') c.classList.add('js-playbook');
+    c.classList.add('flex-shrink-0');
+    dst.appendChild(c);
+  }
+  dst.addEventListener('click', e => {
+    if (e.target.closest('.js-playbook')) openPlaybook();
+  });
+}
+
+// The filter panel is taller than a phone screen, so it opens closed on mobile
+// and the results are the first thing you see.
+function collapseFiltersOnMobile() {
+  if (window.innerWidth >= 768) return;
+  document.querySelectorAll('aside details[open], .filter-panel details[open]').forEach(d => d.removeAttribute('open'));
+  document.querySelectorAll('details[open]').forEach(d => {
+    if (d.closest('#playbook')) return;
+    d.removeAttribute('open');
+  });
+}
+
 // ---------- init ----------
 async function init() {
   try {
@@ -136,7 +165,9 @@ async function init() {
     return;
   }
   loadPersisted();
+  mirrorPresetsForMobile();
   buildFilterUI();
+  collapseFiltersOnMobile();
   wireEvents();
   updateStats();
   render();
